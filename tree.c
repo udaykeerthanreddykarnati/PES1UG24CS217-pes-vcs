@@ -196,7 +196,7 @@ static int write_tree_level(IndexEntry *entries, int count,
     free(data);
     return ret;
 }
-
+// This if the last main function needed in phase 2
 
 int tree_from_index(ObjectID *id_out) {
     Index idx;
