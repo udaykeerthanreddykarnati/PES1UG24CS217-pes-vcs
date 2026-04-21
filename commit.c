@@ -204,6 +204,13 @@ int commit_create(const char *message, ObjectID *commit_id_out) {
         return -1;
     }
 
+    // ── 2. Attach parent commit if HEAD already points at one ────────────────
+    if (head_read(&c.parent) == 0) {
+        c.has_parent = 1;
+    } else {
+        c.has_parent = 0;   // first commit in the repo
+    }
+
     
 
     if (commit_id_out) *commit_id_out = commit_id;
