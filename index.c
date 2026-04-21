@@ -1,4 +1,4 @@
-// index.c (commit 1)
+// index.c (commit 2)
 
 #include "index.h"
 #include <stdio.h>
@@ -25,6 +25,24 @@ int index_load(Index *index) {
 
     FILE *f = fopen(INDEX_FILE, "r");
     if (!f) return 0;
+
+    char hex[HASH_HEX_SIZE + 1];
+    while (index->count < MAX_INDEX_ENTRIES) {
+        IndexEntry *e = &index->entries[index->count];
+
+        int n = fscanf(f, "%o %64s %llu %llu %255s",
+                       &e->mode,
+                       hex,
+                       (unsigned long long *)&e->mtime_sec,
+                       (unsigned long long *)&e->size,
+                       e->path);
+
+        if (n == EOF) break;
+        if (n != 5) { fclose(f); return -1; }
+
+        if (hex_to_hash(hex, &e->hash) < 0) { fclose(f); return -1; }
+        index->count++;
+    }
 
     fclose(f);
     return 0;
