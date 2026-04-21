@@ -13,9 +13,9 @@
 //
 // PROVIDED functions: commit_parse, commit_serialize, commit_walk, head_read, head_update
 // TODO functions:     commit_create
+//FINAL 
 
 #include "commit.h"
-#include "index.h"
 #include "tree.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -123,6 +123,7 @@ int commit_walk(commit_walk_fn callback, void *ctx) {
         id = c.parent;
     }
     return 0;
+
 }
 
 // Read the current HEAD commit hash.
@@ -194,8 +195,17 @@ int head_update(const ObjectID *new_commit) {
 //
 // Returns 0 on success, -1 on error.
 int commit_create(const char *message, ObjectID *commit_id_out) {
-    // TODO: Implement commit creation
-    // (See Lab Appendix for logical steps)
-    (void)message; (void)commit_id_out;
-    return -1;
+    Commit c;
+    memset(&c, 0, sizeof(c));
+
+    // ── 1. Build the tree from the current index ─────────────────────────────
+    if (tree_from_index(&c.tree) < 0) {
+        fprintf(stderr, "error: failed to write tree\n");
+        return -1;
+    }
+
+    
+
+    if (commit_id_out) *commit_id_out = commit_id;
+    return 0;
 }
