@@ -72,6 +72,36 @@ int index_save(const Index *index) {
     return 0;
 }
 
-int index_add(Index *index, const char *path) {
+// index.c (commit 4)
+
+int index_save(const Index *index) {
+    Index sorted = *index;
+    qsort(sorted.entries, sorted.count, sizeof(IndexEntry), compare_index_entries);
+
+    char tmp_path[] = PES_DIR "/index_tmp_XXXXXX";
+    int fd = mkstemp(tmp_path);
+    if (fd < 0) return -1;
+
+    FILE *f = fdopen(fd, "w");
+    if (!f) { close(fd); return -1; }
+
+    char hex[HASH_HEX_SIZE + 1];
+    for (int i = 0; i < sorted.count; i++) {
+        const IndexEntry *e = &sorted.entries[i];
+        hash_to_hex(&e->hash, hex);
+
+        fprintf(f, "%o %s %llu %llu %s\n",
+                e->mode,
+                hex,
+                (unsigned long long)e->mtime_sec,
+                (unsigned long long)e->size,
+                e->path);
+    }
+
+    fflush(f);
+    fsync(fileno(f));
+    fclose(f);
+
+    if (rename(tmp_path, INDEX_FILE) != 0) return -1;
     return 0;
 }
