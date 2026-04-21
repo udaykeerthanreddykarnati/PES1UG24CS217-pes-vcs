@@ -216,6 +216,14 @@ int commit_create(const char *message, ObjectID *commit_id_out) {
     c.timestamp = (uint64_t)time(NULL);
     snprintf(c.message, sizeof(c.message), "%s", message);
 
+    // ── 4. Serialize to text ─────────────────────────────────────────────────
+    void *data;
+    size_t data_len;
+    if (commit_serialize(&c, &data, &data_len) < 0) {
+        fprintf(stderr, "error: failed to serialize commit\n");
+        return -1;
+    }
+
     
 
     if (commit_id_out) *commit_id_out = commit_id;
