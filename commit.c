@@ -224,7 +224,20 @@ int commit_create(const char *message, ObjectID *commit_id_out) {
         return -1;
     }
 
-    
+    // ── 5. Store as a commit object ──────────────────────────────────────────
+    ObjectID commit_id;
+    int ret = object_write(OBJ_COMMIT, data, data_len, &commit_id);
+    free(data);
+    if (ret < 0) {
+        fprintf(stderr, "error: failed to write commit object\n");
+        return -1;
+    }
+
+    // ── 6. Advance HEAD to the new commit ────────────────────────────────────
+    if (head_update(&commit_id) < 0) {
+        fprintf(stderr, "error: failed to update HEAD\n");
+        return -1;
+    }
 
     if (commit_id_out) *commit_id_out = commit_id;
     return 0;
