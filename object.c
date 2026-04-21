@@ -237,7 +237,12 @@ int object_read(const ObjectID *id, ObjectType *type_out, void **data_out, size_
     else if (strcmp(type_str, "commit") == 0) *type_out = OBJ_COMMIT;
     else { free(buf); return -1; }
 
-    
+    // 6. Copy data portion into a fresh allocation for the caller
+    void *data_copy = malloc(data_len);
+    if (!data_copy) { 
+        free(buf); return -1; 
+    }
+    memcpy(data_copy, buf + header_len, data_len);
 
     free(buf);
     *data_out = data_copy;
