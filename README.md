@@ -2,8 +2,8 @@
 
 **Objective:** Build a local version control system that tracks file changes, stores snapshots efficiently, and supports commit history. Every component maps directly to operating system and filesystem concepts.
 
-**Platform:** Ubuntu 22.04
-report.pdf HAS BEEN MADE INSTEAD OF README(AS ASKED) PLEASE REFER TO THE PDF IT CONTAINS THE SCREENSHOTS AND THE ANSWERS TO QUESTIONS 
+**Platform:** Ubuntu 22.04  
+**report.pdf HAS BEEN MADE INSTEAD OF README(AS ASKED) PLEASE REFER TO THE PDF IT CONTAINS THE SCREENSHOTS AND THE ANSWERS TO QUESTIONS**
 
 ---
 
