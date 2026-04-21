@@ -1,4 +1,4 @@
-// index.c (commit 2)
+// index.c (commit 3)
 
 #include "index.h"
 #include <stdio.h>
@@ -49,6 +49,26 @@ int index_load(Index *index) {
 }
 
 int index_save(const Index *index) {
+    Index sorted = *index;
+    qsort(sorted.entries, sorted.count, sizeof(IndexEntry), compare_index_entries);
+
+    FILE *f = fopen(INDEX_FILE, "w");
+    if (!f) return -1;
+
+    char hex[HASH_HEX_SIZE + 1];
+    for (int i = 0; i < sorted.count; i++) {
+        const IndexEntry *e = &sorted.entries[i];
+        hash_to_hex(&e->hash, hex);
+
+        fprintf(f, "%o %s %llu %llu %s\n",
+                e->mode,
+                hex,
+                (unsigned long long)e->mtime_sec,
+                (unsigned long long)e->size,
+                e->path);
+    }
+
+    fclose(f);
     return 0;
 }
 
