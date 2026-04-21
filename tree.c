@@ -198,4 +198,18 @@ static int write_tree_level(IndexEntry *entries, int count,
 }
 
 
+int tree_from_index(ObjectID *id_out) {
+    Index idx;
+    if (index_load(&idx) < 0) return -1;
 
+    if (idx.count == 0) {
+        Tree empty = { .count = 0 };
+        void *data; size_t data_len;
+        if (tree_serialize(&empty, &data, &data_len) < 0) return -1;
+        int ret = object_write(OBJ_TREE, data, data_len, id_out);
+        free(data);
+        return ret;
+    }
+
+    return write_tree_level(idx.entries, idx.count, 0, id_out);
+}
