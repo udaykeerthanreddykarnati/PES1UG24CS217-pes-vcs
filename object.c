@@ -186,4 +186,62 @@ int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out
 // Returns 0 on success, -1 on error (file not found, corrupt, etc.).
 
 
+int object_read(const ObjectID *id, ObjectType *type_out, void **data_out, size_t *len_out) {
+    // 1. Build path and open file
+    char path[512];
+    object_path(id, path, sizeof(path));
+
+    FILE *f = fopen(path, "rb");
+    if (!f) return -1;
+
+    // 2. Read entire file into memory
+    fseek(f, 0, SEEK_END);
+    long file_size = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    if (file_size < 0) { fclose(f); return -1; }
+
+    uint8_t *buf = malloc((size_t)file_size);
+    if (!buf) { fclose(f); return -1; }
+    if (fread(buf, 1, (size_t)file_size, f) != (size_t)file_size) {
+        free(buf); fclose(f); return -1;
+    }
+    fclose(f);
+
+    // 3. Parse header — find the '\0' separating header from data
+    uint8_t *null_ptr = memchr(buf, '\0', (size_t)file_size);
+    if (!null_ptr) { free(buf); return -1; }
+
+    size_t header_len = (size_t)(null_ptr - buf) + 1; // includes the '\0'
+    char *header = (char *)buf;                        // null_ptr makes this safe to use as a C string
+
+    // Parse type and size from header (format: "<type> <size>")
+    size_t data_len;
+    char type_str[16];
+    if (sscanf(header, "%15s %zu", type_str, &data_len) != 2) {
+        free(buf); return -1;
+    }
+
+    
+
+    // Verify the claimed data length matches what's actually present
+    if (header_len + data_len != (size_t)file_size) { free(buf); return -1; }
+
+    // 5. Parse type string
+    if      (strcmp(type_str, "blob")   == 0) *type_out = OBJ_BLOB;
+    else if (strcmp(type_str, "tree")   == 0) *type_out = OBJ_TREE;
+    else if (strcmp(type_str, "commit") == 0) *type_out = OBJ_COMMIT;
+    else { free(buf); return -1; }
+
+    // 6. Copy data portion into a fresh allocation for the caller
+    void *data_copy = malloc(data_len);
+    if (!data_copy) { 
+        free(buf); return -1; 
+    }
+    memcpy(data_copy, buf + header_len, data_len);
+
+    free(buf);
+    *data_out = data_copy;
+    *len_out  = data_len;
+    return 0;
+}
 
