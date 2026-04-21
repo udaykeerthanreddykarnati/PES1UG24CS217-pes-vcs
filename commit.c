@@ -211,6 +211,11 @@ int commit_create(const char *message, ObjectID *commit_id_out) {
         c.has_parent = 0;   // first commit in the repo
     }
 
+    // ── 3. Fill author, timestamp, and message ───────────────────────────────
+    snprintf(c.author, sizeof(c.author), "%s", pes_author());
+    c.timestamp = (uint64_t)time(NULL);
+    snprintf(c.message, sizeof(c.message), "%s", message);
+
     
 
     if (commit_id_out) *commit_id_out = commit_id;
